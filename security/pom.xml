@@ -7,6 +7,14 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>security Maven Webapp</name>
   <url>http://maven.apache.org</url>
+  
+  <repositories>
+  	<repository>
+  		<id>springframework</id>
+  		<url>http://maven.springframework.org/release/</url>
+  	</repository>
+  </repositories>
+  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -14,6 +22,43 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-context</artifactId>
+    	<version>3.1.0.RELEASE</version>
+    	<exclusions>
+    		<exclusion>
+    			<artifactId>commons-logging</artifactId>
+    			<groupId>commons-logging</groupId>
+    		</exclusion>
+    	</exclusions>
+    </dependency>
+    
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>jcl-over-slf4j</artifactId>
+    	<version>1.5.8</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-api</artifactId>
+    	<version>1.5.8</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-log4j12</artifactId>
+    	<version>1.5.8</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>log4j</groupId>
+    	<artifactId>log4j</artifactId>
+    	<version>1.2.14</version>
+    </dependency>
+    
   </dependencies>
   
   
