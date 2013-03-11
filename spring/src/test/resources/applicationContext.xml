@@ -4,5 +4,10 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-	<bean id="myBeam" class="com.wemb.MyBean"></bean>
+	<bean id="userDao" class="edu.dao.UserDao">
+		<property name="connectionMaker" ref="connectionMaker"></property>
+	</bean>
+	
+	<bean id="connectionMaker" class="edu.ConnectionMaker"></bean>
+	
 </beans>
