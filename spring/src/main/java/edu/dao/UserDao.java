@@ -14,7 +14,9 @@ import edu.vo.User;
 
 public class UserDao {
 
-	private ConnectionMaker connectionMaker;
+	public UserDao() {
+
+	}
 
 	private DataSource dataSource;
 
@@ -26,24 +28,25 @@ public class UserDao {
 		this.dataSource = dataSource;
 	}
 
-	public ConnectionMaker getConnectionMaker() {
-		return connectionMaker;
+	private JdbcContext jdbcContext;
+	
+	/**
+	 * @return the jdbcContext
+	 */
+	public JdbcContext getJdbcContext() {
+		return jdbcContext;
 	}
 
-	public void setConnectionMaker(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
+	/**
+	 * @param jdbcContext the jdbcContext to set
+	 */
+	public void setJdbcContext(JdbcContext jdbcContext) {
+		this.jdbcContext = jdbcContext;
 	}
 
-	public UserDao() {
-
-	}
-
-	public UserDao(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
-	}
 
 	public void add(final User user) throws SQLException {
-		jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
 			@Override
 			public PreparedStatement makePreparedStatement(Connection c)
 					throws SQLException {
@@ -76,7 +79,7 @@ public class UserDao {
 	}
 
 	public void deleteAll() throws SQLException {
-		jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
 			@Override
 			public PreparedStatement makePreparedStatement(Connection c)
 					throws SQLException {
@@ -85,36 +88,20 @@ public class UserDao {
 			}
 		});
 	}
-
-	public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException{
-		Connection c = null;
-		PreparedStatement ps = null;
+	
+	public int getCount() throws SQLException {
+		Connection c = dataSource.getConnection();
+		PreparedStatement ps = c.prepareStatement("select count(*) from users");
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		int count = rs.getInt(1);
 		
-		try{
-			c =dataSource.getConnection();
-			
-			ps = stmt.makePreparedStatement(c);
-			
-			ps.executeUpdate();
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			if(ps != null) {
-				try {
-					ps.close();
-				} catch (Exception e2) {
-					// TODO: handle exception
-				}
-			
-			}
-			if (c != null) {
-				try {
-					c.close();
-				} catch (SQLException e2) {
-					// TODO: handle exception
-				}
-			}
-		}
+		rs.close();
+		ps.close();
+		c.close();
+		
+		return count;
 	}
+
 
 }

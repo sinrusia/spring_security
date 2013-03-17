@@ -1,16 +1,16 @@
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.*;
+import static org.hamcrest.CoreMatchers.*;
 
 import edu.dao.UserDao;
 import edu.vo.User;
@@ -41,7 +41,9 @@ public class UserDaoTest {
 		
 		User user2 = dao.get(user.getId());
 		
+		assertThat(user.getId(), is(user2.getId()));
 		
+		assertThat(dao.getCount(), is(1));
 	}
 	
 	@After
