@@ -4,9 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import edu.ConnectionMaker;
@@ -17,15 +24,11 @@ public class UserDao {
 	public UserDao() {
 
 	}
-
-	private DataSource dataSource;
-
-	public DataSource getDataSource() {
-		return dataSource;
-	}
+	
+	private JdbcTemplate jdbcTemplate;
 
 	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	private JdbcContext jdbcContext;
@@ -46,11 +49,11 @@ public class UserDao {
 
 
 	public void add(final User user) throws SQLException {
-		this.jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcTemplate.update(new PreparedStatementCreator() {
 			@Override
-			public PreparedStatement makePreparedStatement(Connection c)
+			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement ps = c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
+				PreparedStatement ps = con.prepareStatement("insert into users(id,name,password) values(?,?,?)");
 				ps.setString(1, user.getId());
 				ps.setString(2, user.getName());
 				ps.setString(3, user.getPassword());
@@ -60,47 +63,66 @@ public class UserDao {
 	}
 	
 	public User get(String id) throws SQLException {
-		Connection c = dataSource.getConnection();
-		PreparedStatement ps = c.prepareStatement("select * from users where id = ?");
-		ps.setString(1, id);
-		
-		ResultSet rs = ps.executeQuery();
-		rs.next();
-		User user = new User();
-		user.setId(rs.getString("id"));
-		user.setName(rs.getString("name"));
-		user.setPassword(rs.getString("password"));
-		
-		rs.close();
-		ps.close();
-		c.close();
-		
-		return user;
+		return this.jdbcTemplate.queryForObject("select * from users where id = ?",
+				new Object[] {id},
+			new RowMapper<User>() {
+				@Override
+				public User mapRow(ResultSet rs, int rowNum)
+						throws SQLException {
+					User user = new User();
+					user.setId(rs.getString("id"));
+					user.setName(rs.getString("name"));
+					user.setPassword(rs.getString("password"));
+					return user;
+				}
+			});
 	}
 
 	public void deleteAll() throws SQLException {
-		this.jdbcContext.jdbcContextWithStatementStrategy(new StatementStrategy() {
+		this.jdbcTemplate.update(new PreparedStatementCreator() {
+			
 			@Override
-			public PreparedStatement makePreparedStatement(Connection c)
+			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement ps = c.prepareStatement("delete from users");
-				return ps;
+				return con.prepareStatement("delete from users");
 			}
 		});
 	}
 	
 	public int getCount() throws SQLException {
-		Connection c = dataSource.getConnection();
-		PreparedStatement ps = c.prepareStatement("select count(*) from users");
-		ResultSet rs = ps.executeQuery();
-		rs.next();
-		int count = rs.getInt(1);
-		
-		rs.close();
-		ps.close();
-		c.close();
-		
-		return count;
+		return jdbcTemplate.query(new PreparedStatementCreator() {
+			
+			@Override
+			public PreparedStatement createPreparedStatement(Connection con)
+					throws SQLException {
+				return con.prepareStatement("select count(*) from users");
+			}
+			
+		}, new ResultSetExtractor<Integer>() {
+			@Override
+			public Integer extractData(ResultSet rs) throws SQLException,
+					DataAccessException {
+				rs.next();
+				return rs.getInt(1);
+			}
+		});
+	}
+	
+	public List<User> getAll(){
+		return this.jdbcTemplate.query("select * from users order by id",
+				new RowMapper<User>() {
+					@Override
+					public User mapRow(ResultSet rs, int rowNum)
+							throws SQLException {
+						User user = new User();
+						user.setId(rs.getString("id"));
+						user.setName(rs.getString("name"));
+						user.setPassword(rs.getString("password"));
+						return user;
+					}
+				});
+			
+		}
 	}
 
 
