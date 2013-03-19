@@ -122,8 +122,5 @@ public class UserDao {
 					}
 				});
 			
-		}
 	}
-
-
 }
