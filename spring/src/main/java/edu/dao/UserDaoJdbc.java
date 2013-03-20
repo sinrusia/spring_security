@@ -78,7 +78,7 @@ public class UserDaoJdbc implements UserDao {
 			});
 	}
 
-	public void deleteAll() throws SQLException {
+	public void deleteAll() {
 		this.jdbcTemplate.update(new PreparedStatementCreator() {
 			
 			@Override
@@ -122,7 +122,6 @@ public class UserDaoJdbc implements UserDao {
 					}
 				});
 			
-		}
 	}
 
 }

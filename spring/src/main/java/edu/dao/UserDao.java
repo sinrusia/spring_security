@@ -10,4 +10,5 @@ public interface UserDao {
 	User get(String id);
 	List<User> getAll();
 	int getCount();
+	void deleteAll();
 }
