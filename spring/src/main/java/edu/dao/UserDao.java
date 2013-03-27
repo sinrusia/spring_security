@@ -11,4 +11,6 @@ public interface UserDao {
 	List<User> getAll();
 	int getCount();
 	void deleteAll();
+	
+	void upgradeLevels();
 }

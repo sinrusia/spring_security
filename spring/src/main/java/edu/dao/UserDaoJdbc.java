@@ -124,4 +124,10 @@ public class UserDaoJdbc implements UserDao {
 			
 	}
 
+	@Override
+	public void upgradeLevels() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
