@@ -13,6 +13,12 @@ import edu.dao.UserDao;
 import edu.vo.User;
 
 public class UserService {
+	
+	private PlatformTransactionManager transactionManager;
+	
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
 
 	private DataSource dataSource;
 	
@@ -24,11 +30,14 @@ public class UserService {
 	}
 	
 	private UserDao userDao;
+	
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
+	}
 
 	public void upgradeLevels(){
-		PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
 		
-		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 		
 		try{
 			List<User> users = userDao.getAll();
@@ -38,9 +47,9 @@ public class UserService {
 					upgradeLevel(user);
 				}
 			}
-			transactionManager.commit(status);
+			this.transactionManager.commit(status);
 		} catch (RuntimeException e) {
-			transactionManager.rollback(status);
+			this.transactionManager.rollback(status);
 			throw e;
 		}
 	}
