@@ -4,6 +4,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import edu.mail.MailSender;
 import edu.vo.User;
 
 public class UserServiceTx implements UserService {
@@ -40,5 +41,11 @@ public class UserServiceTx implements UserService {
 			this.transactionManager.rollback(status);
 			throw e;
 		}
+	}
+
+	@Override
+	public void setMailSender(MailSender mockMailSender) {
+		// TODO Auto-generated method stub
+		
 	}
 }

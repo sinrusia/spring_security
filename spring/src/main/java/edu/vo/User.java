@@ -9,6 +9,23 @@ public class User {
 	private int login;
 	private int recommend;
 	private Level level;
+	private String email;
+	
+	public User() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public User(String id, String name, String password, int login,
+			int recommend, Level level, String email) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.password = password;
+		this.login = login;
+		this.recommend = recommend;
+		this.level = level;
+		this.email = email;
+	}
 
 	public String getId() {
 		return id;
@@ -63,6 +80,18 @@ public class User {
 	public void setLevel(Level level) {
 		this.level = level;
 	}
+	
+	public boolean canUpgradeLevel(){
+		switch (getLevel()) {
+		case BASIC:
+			if(login > 50) return true;
+		case SILVER:
+			if(login > 100) return true;
+		case GOLD:
+			if (login > 150) return true;
+		}
+		return false;
+	}
 
 	public void upgradeLevel() {
 		Level nextLevel = this.getLevel().nextLevel();
@@ -72,6 +101,14 @@ public class User {
 		}else{
 			this.setLevel(nextLevel);
 		}
+	}
+
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }

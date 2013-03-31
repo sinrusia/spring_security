@@ -13,4 +13,5 @@ public interface UserDao {
 	void deleteAll();
 	
 	void upgradeLevels();
+	void update(User user);
 }
