@@ -26,18 +26,30 @@ public class UserServiceTx implements UserService {
 		this.transactionManager = transactionManager;
 	}
 
+	/**
+	 * 메소드 구현과 위임
+	 */
 	@Override
 	public void add(User user) {
-		userService.add(user);
+		this.userService.add(user);
 	}
 
+	/**
+	 * 메소드 구현
+	 */
 	@Override
 	public void upgradeLevels() {
-		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
-		try{
+		// 부가기능 수행
+		TransactionStatus status = this.transactionManager
+				.getTransaction(new DefaultTransactionDefinition());
+		try {
+			
+			// 위임
 			userService.upgradeLevels();
+			
+			// 부가기능 수행
 			this.transactionManager.commit(status);
-		}catch(RuntimeException e){
+		} catch (RuntimeException e) {
 			this.transactionManager.rollback(status);
 			throw e;
 		}
@@ -46,6 +58,6 @@ public class UserServiceTx implements UserService {
 	@Override
 	public void setMailSender(MailSender mockMailSender) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
