@@ -16,6 +16,7 @@ import edu.TestUserService;
 import edu.UserService;
 import edu.UserServiceImpl;
 import edu.UserServiceTx;
+import edu.dao.MockUserDao;
 import edu.dao.UserDao;
 import edu.domain.Level;
 import edu.mail.MailSender;
@@ -36,7 +37,7 @@ public class UserServiceTest {
 	MailSender mailSender;
 
 	@Autowired
-	UserService userServiceImpl;
+	UserService userService;
 
 	private List<User> users;
 
@@ -45,11 +46,11 @@ public class UserServiceTest {
 		users = new ArrayList<User>();
 		users.add(new User("id01", "홍길동", "pwd01", 49, 1, Level.valueOf(1),
 				"abcd1@wemb.co.kr"));
-		users.add(new User("id02", "장발장", "pwd02", 51, 1, Level.valueOf(1),
+		users.add(new User("joytouch", "장발장", "pwd02", 51, 1, Level.valueOf(1),
 				"abcd2@wemb.co.kr"));
 		users.add(new User("id03", "춘향이", "pwd03", 3, 1, Level.valueOf(1),
 				"abcd3@wemb.co.kr"));
-		users.add(new User("id04", "김삿갓", "pwd04", 101, 2, Level.valueOf(2),
+		users.add(new User("madnite1", "김삿갓", "pwd04", 101, 2, Level.valueOf(2),
 				"abcd4@wemb.co.kr"));
 		users.add(new User("id05", "김삿갓", "pwd05", 4, 1, Level.valueOf(1),
 				"abcd4@wemb.co.kr"));
@@ -80,29 +81,40 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext
 	public void upgradeLevels() throws Exception {
-		userDao.deleteAll();
-		for (User user : users)
-			userDao.add(user);
-
+		// 고립된 테스트에서는 테스트 대상 오브젝트를 직접 생성하면 된다.
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
+		
+		// 목 오브젝트로 만든 UserDao를 직접 DI해준다.
+		MockUserDao mockUserDao = new MockUserDao(this.users);
+		userServiceImpl.setUserDao(mockUserDao);
+		
+		// 메일 발송 여부 확인을 위해 목 오브젝트 DI
 		MockMailSender mockMailSender = new MockMailSender();
 		userServiceImpl.setMailSender(mockMailSender);
 		
 		userServiceImpl.upgradeLevels();
 		
-		checkLevelUpgraded(users.get(0), false);
-		checkLevelUpgraded(users.get(1), true);
-		checkLevelUpgraded(users.get(2), false);
-		checkLevelUpgraded(users.get(3), true);
-		checkLevelUpgraded(users.get(4), false);
+		// MockuserDao로부터 업데이트 결과를 가져온다.
+		List<User> updated = mockUserDao.getUpdated();
+		assertThat(updated.size(), is(2));
+		checkUserAndLevel(updated.get(0), "joytouch", Level.SILVER);
+		checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
 		
 		List<String> request = mockMailSender.getRequests();
 		assertThat(request.size(), is(2));
 		assertThat(request.get(0), is(users.get(1).getEmail()));
 		assertThat(request.get(1), is(users.get(3).getEmail()));
 	}
+	
+	private void checkUserAndLevel(User updated, String expectedId, Level expectedLevel){
+		assertThat(updated.getId(), is(expectedId));
+		assertThat(updated.getLevel(), is(expectedLevel));
+	}
 
 	private void checkLevelUpgraded(User user, boolean b) {
-		// TODO Auto-generated method stub
+		User userUpdate = userDao.get(user.getId());
+		
+		
 		
 	}
 
