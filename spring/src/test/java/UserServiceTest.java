@@ -3,6 +3,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import edu.UserServiceTx;
 import edu.dao.MockUserDao;
 import edu.dao.UserDao;
 import edu.domain.Level;
+import edu.handler.TransactionHandler;
 import edu.mail.MailSender;
 import edu.mail.MockMailSender;
 import edu.vo.User;
@@ -65,14 +67,19 @@ public class UserServiceTest {
 
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
+
 		TestUserService testUserService = new TestUserService(users.get(3)
 				.getId());
 		testUserService.setUserDao(userDao);
 		testUserService.setMailSender(mailSender);
 
-		UserServiceTx txUserService = new UserServiceTx();
-		txUserService.setTransactionManager(transactionManager);
-		txUserService.setUserService(testUserService);
+		TransactionHandler txHandler = new TransactionHandler();
+		txHandler.setTarget(testUserService);
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setPattern("upgradeLevels");
+		UserService txUserService = (UserService) Proxy.newProxyInstance(
+				getClass().getClassLoader(), new Class[] { UserService.class },
+				txHandler);
 
 		userDao.deleteAll();
 
@@ -81,7 +88,6 @@ public class UserServiceTest {
 
 		try {
 			txUserService.upgradeLevels();
-			fail("testUserService Exception expected");
 		} catch (Exception e) {
 
 		}
@@ -100,8 +106,8 @@ public class UserServiceTest {
 
 		userServiceImpl.upgradeLevels();
 
-		//verify(mockUserDao, times(2)).update(any(User.class));
-		//verify(mockUserDao, times(2)).update(any(User.class));
+		// verify(mockUserDao, times(2)).update(any(User.class));
+		// verify(mockUserDao, times(2)).update(any(User.class));
 		verify(mockUserDao).update(users.get(1));
 		assertThat(users.get(1).getLevel(), is(Level.SILVER));
 		verify(mockUserDao).update(users.get(3));
