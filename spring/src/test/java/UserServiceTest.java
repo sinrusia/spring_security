@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,11 +31,15 @@ import edu.domain.Level;
 import edu.handler.TransactionHandler;
 import edu.mail.MailSender;
 import edu.mail.MockMailSender;
+import edu.service.TxProxyFactoryBean;
 import edu.vo.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "/applicationContext-hsqldb.xml")
+@ContextConfiguration
 public class UserServiceTest {
+	
+	@Autowired
+	ApplicationContext context;
 
 	@Autowired
 	UserDao userDao;
@@ -72,15 +77,12 @@ public class UserServiceTest {
 				.getId());
 		testUserService.setUserDao(userDao);
 		testUserService.setMailSender(mailSender);
-
-		TransactionHandler txHandler = new TransactionHandler();
-		txHandler.setTarget(testUserService);
-		txHandler.setTransactionManager(transactionManager);
-		txHandler.setPattern("upgradeLevels");
-		UserService txUserService = (UserService) Proxy.newProxyInstance(
-				getClass().getClassLoader(), new Class[] { UserService.class },
-				txHandler);
-
+		
+		TxProxyFactoryBean txProxyFactoryBean = context.getBean("&userService", TxProxyFactoryBean.class);
+		
+		txProxyFactoryBean.setTarget(testUserService);
+		UserService txUserService = (UserService)txProxyFactoryBean.getObject();
+		
 		userDao.deleteAll();
 
 		for (User user : users)
@@ -88,9 +90,12 @@ public class UserServiceTest {
 
 		try {
 			txUserService.upgradeLevels();
+			fail("TestUserServiceException expected");
 		} catch (Exception e) {
 
 		}
+		
+		checkLevelUpgraded(users.get(1), false);
 	}
 
 	@Test
