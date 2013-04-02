@@ -158,5 +158,10 @@ public class UserServiceTest {
 		User userUpdate = userDao.get(user.getId());
 
 	}
+	
+	@Test
+	public void advisorAutoProxyCreator(){
+		assertThat(testUserService, is(java.lang.reflect.Proxy.class));
+	}
 
 }
