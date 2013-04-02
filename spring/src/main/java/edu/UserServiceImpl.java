@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
-	private void upgradeLevel(User user) {
+	protected void upgradeLevel(User user) {
 		user.upgradeLevel();
 		userDao.update(user);
 		sendUpgradeEMail(user);
@@ -84,6 +84,15 @@ public class UserServiceImpl implements UserService {
 	public void add(User user) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	static class TestUserServiceImpl extends UserServiceImpl {
+		private String id = "madnite1";
+		
+		protected void upgradeLevel(User user){
+			if(user.getId().equals(this.id))throw new TestUserServiceException();
+			super.upgradeLevel(user);
+		}
 	}
 
 }
