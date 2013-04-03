@@ -9,16 +9,18 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class TransactionAdvice implements MethodInterceptor {
 
 	PlatformTransactionManager transactionManager;
-	
+
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
-	
+
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
-		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
-		try{
+		//트랜잭션을 가져온다.
+		TransactionStatus status = this.transactionManager
+				.getTransaction(new DefaultTransactionDefinition());
+		try {
 			Object ret = invocation.proceed();
 			this.transactionManager.commit(status);
 			return ret;
