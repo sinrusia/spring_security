@@ -42,4 +42,10 @@ public class UserDaoHibernate implements UserDao {
 		
 	}
 
+	@Override
+	public void update(User user) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
