@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import edu.ConnectionMaker;
+import edu.domain.Level;
 import edu.vo.User;
 
 public class UserDaoJdbc implements UserDao {
@@ -53,14 +54,39 @@ public class UserDaoJdbc implements UserDao {
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement ps = con.prepareStatement("insert into users(id,name,password) values(?,?,?)");
+				PreparedStatement ps = con.prepareStatement("INSERT INTO users (id,name,password,level,login,recommend,email) VALUES (?,?,?,?,?,?,?)");
 				ps.setString(1, user.getId());
 				ps.setString(2, user.getName());
 				ps.setString(3, user.getPassword());
+				ps.setInt(4, user.getLevel().intValue());
+				ps.setInt(5, user.getLogin());
+				ps.setInt(6, user.getRecommend());
+				ps.setString(7, user.getEmail());
 				return ps;
 			}
 		});
 	}
+	
+	@Override
+	public void update(final User user) {
+		this.jdbcTemplate.update(new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection con)
+					throws SQLException {
+				String query = "UPDATE users SET name=?, password=?,level=?,login=?,recommend=?,email=? WHERE id=?";
+				PreparedStatement ps = con.prepareStatement(query);
+				ps.setString(1, user.getName());
+				ps.setString(2,	user.getPassword());
+				ps.setInt(3, user.getLevel().intValue());
+				ps.setInt(4, user.getLogin());
+				ps.setInt(5, user.getRecommend());
+				ps.setString(6, user.getEmail());
+				ps.setString(7, user.getId());
+				return ps;
+			}
+		});
+	}
+
 	
 	public User get(String id){
 		return this.jdbcTemplate.queryForObject("select * from users where id = ?",
@@ -118,6 +144,10 @@ public class UserDaoJdbc implements UserDao {
 						user.setId(rs.getString("id"));
 						user.setName(rs.getString("name"));
 						user.setPassword(rs.getString("password"));
+						user.setLevel(Level.valueOf(rs.getInt("level")));
+						user.setLogin(rs.getInt("login"));
+						user.setRecommend(rs.getInt("recommend"));
+						user.setEmail(rs.getString("email"));
 						return user;
 					}
 				});
