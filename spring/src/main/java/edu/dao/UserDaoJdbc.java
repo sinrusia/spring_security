@@ -18,12 +18,19 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import edu.ConnectionMaker;
 import edu.domain.Level;
+import edu.user.SqlService;
 import edu.vo.User;
 
 public class UserDaoJdbc implements UserDao {
 
 	public UserDaoJdbc() {
 
+	}
+	
+	private SqlService sqlService;
+	
+	public void setSqlService(SqlService sqlService) {
+		this.sqlService = sqlService;
 	}
 	
 	private JdbcTemplate jdbcTemplate;
@@ -54,7 +61,7 @@ public class UserDaoJdbc implements UserDao {
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				PreparedStatement ps = con.prepareStatement("INSERT INTO users (id,name,password,level,login,recommend,email) VALUES (?,?,?,?,?,?,?)");
+				PreparedStatement ps = con.prepareStatement(sqlService.getSql("userAdd"));
 				ps.setString(1, user.getId());
 				ps.setString(2, user.getName());
 				ps.setString(3, user.getPassword());
@@ -73,7 +80,7 @@ public class UserDaoJdbc implements UserDao {
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				String query = "UPDATE users SET name=?, password=?,level=?,login=?,recommend=?,email=? WHERE id=?";
+				String query = sqlService.getSql("userUpdate");
 				PreparedStatement ps = con.prepareStatement(query);
 				ps.setString(1, user.getName());
 				ps.setString(2,	user.getPassword());
@@ -89,7 +96,7 @@ public class UserDaoJdbc implements UserDao {
 
 	
 	public User get(String id){
-		return this.jdbcTemplate.queryForObject("select * from users where id = ?",
+		return this.jdbcTemplate.queryForObject(sqlService.getSql("userGet"),
 				new Object[] {id},
 			new RowMapper<User>() {
 				@Override
@@ -110,7 +117,7 @@ public class UserDaoJdbc implements UserDao {
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				return con.prepareStatement("delete from users");
+				return con.prepareStatement(sqlService.getSql("userDeleteAll"));
 			}
 		});
 	}
@@ -121,7 +128,7 @@ public class UserDaoJdbc implements UserDao {
 			@Override
 			public PreparedStatement createPreparedStatement(Connection con)
 					throws SQLException {
-				return con.prepareStatement("select count(*) from users");
+				return con.prepareStatement(sqlService.getSql("userGetCount"));
 			}
 			
 		}, new ResultSetExtractor<Integer>() {
@@ -135,7 +142,7 @@ public class UserDaoJdbc implements UserDao {
 	}
 	
 	public List<User> getAll(){
-		return this.jdbcTemplate.query("select * from users order by id",
+		return this.jdbcTemplate.query(sqlService.getSql("userGetAll"),
 				new RowMapper<User>() {
 					@Override
 					public User mapRow(ResultSet rs, int rowNum)
