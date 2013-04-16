@@ -39,23 +39,6 @@ public class UserDaoJdbc implements UserDao {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	private JdbcContext jdbcContext;
-	
-	/**
-	 * @return the jdbcContext
-	 */
-	public JdbcContext getJdbcContext() {
-		return jdbcContext;
-	}
-
-	/**
-	 * @param jdbcContext the jdbcContext to set
-	 */
-	public void setJdbcContext(JdbcContext jdbcContext) {
-		this.jdbcContext = jdbcContext;
-	}
-
-
 	public void add(final User user) {
 		this.jdbcTemplate.update(new PreparedStatementCreator() {
 			@Override
