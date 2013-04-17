@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Start Building -->
+<project name="myPureMVC" basedir="../" default="buildLib">
+
+	<!-- target : buildLib -->
+	<target name="buildLib">
+	</target>
+	
+	<target name="runUnitTests">
+		<java jar="../build/lib/JsTestDriver-1.3.5.jar" fork="true">
+			
+			<arg value="--config"/>
+			<arg value="../build/lib/config/test.conf"/>
+			
+			<arg value="--browser"/>
+			<arg value="open"/>
+			
+			<arg value="--port"/>
+			<arg value="8080"/>
+			
+			<arg value="--tests"/>
+			<arg value="all"/>
+			
+			
+		</java>
+	</target>
+
+</project>

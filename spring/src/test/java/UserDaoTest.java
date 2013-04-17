@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
 import edu.dao.UserDao;
+import edu.domain.Level;
 import edu.vo.User;
 
 
@@ -45,6 +46,7 @@ public class UserDaoTest {
 		user.setId("user01");
 		user.setName("∞Ì¿Á«–");
 		user.setPassword("user01");
+		user.setLevel(Level.BASIC);
 		dao.add(user);
 		
 		User user2 = dao.get(user.getId());

@@ -82,17 +82,22 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void add(User user) {
-		// TODO Auto-generated method stub
-
+		userDao.add(user);
 	}
 	
-	static class TestUserServiceImpl extends UserServiceImpl {
-		private String id = "madnite1";
-		
-		protected void upgradeLevel(User user){
-			if(user.getId().equals(this.id))throw new TestUserServiceException();
-			super.upgradeLevel(user);
-		}
+	@Override
+	public User get(String id) {
+		return userDao.get(id);
+	}
+	
+	@Override
+	public void deleteAll() {
+		userDao.deleteAll();
+	}
+	
+	@Override
+	public int getCount() {
+		return userDao.getCount();
 	}
 
 }

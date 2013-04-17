@@ -4,6 +4,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataAccessException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -73,8 +75,27 @@ public class UserServiceTest {
 		users.add(new User("id05", "김삿갓", "pwd05", 4, 1, Level.valueOf(1),
 				"abcd4@wemb.co.kr"));
 	}
-
+	
 	@Test
+	public void addAndGet() throws SQLException {
+		
+		userService.deleteAll();
+		
+		User user = new User();
+		user.setId("user01");
+		user.setName("고재학");
+		user.setPassword("user01");
+		user.setLevel(Level.BASIC);
+		userService.add(user);
+		
+		User user2 = userService.get(user.getId());
+		
+		assertThat(user.getId(), is(user2.getId()));
+		
+		assertThat(userService.getCount(), is(1));
+	}
+
+	@Test(expected=DataAccessException.class)
 	public void upgradeAllOrNothing() throws Exception {
 		
 		userDao.deleteAll();
@@ -92,60 +113,11 @@ public class UserServiceTest {
 		checkLevelUpgraded(users.get(1), false);
 	}
 
-	@Test
-	public void mockUpgradeLevels() throws Exception {
-		UserServiceImpl userServiceImpl = new UserServiceImpl();
-
-		UserDao mockUserDao = mock(UserDao.class);
-		when(mockUserDao.getAll()).thenReturn(this.users);
-		userServiceImpl.setUserDao(mockUserDao);
-
-		MailSender mockMailSender = mock(MailSender.class);
-		userServiceImpl.setMailSender(mockMailSender);
-
-		userServiceImpl.upgradeLevels();
-
-		// verify(mockUserDao, times(2)).update(any(User.class));
-		// verify(mockUserDao, times(2)).update(any(User.class));
-		verify(mockUserDao).update(users.get(1));
-		assertThat(users.get(1).getLevel(), is(Level.SILVER));
-		verify(mockUserDao).update(users.get(3));
-		assertThat(users.get(3).getLevel(), is(Level.GOLD));
-
-		ArgumentCaptor<SimpleMailMessage> mailMessageArg = ArgumentCaptor
-				.forClass(SimpleMailMessage.class);
-		verify(mockMailSender, times(2)).send(mailMessageArg.capture());
-		List<SimpleMailMessage> mailMessages = mailMessageArg.getAllValues();
-		assertThat(mailMessages.get(0).getTo()[0], is(users.get(1).getEmail()));
-		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
-	}
 
 	@Test
 	@DirtiesContext
 	public void upgradeLevels() throws Exception {
-		// 고립된 테스트에서는 테스트 대상 오브젝트를 직접 생성하면 된다.
-		UserServiceImpl userServiceImpl = new UserServiceImpl();
-
-		// 목 오브젝트로 만든 UserDao를 직접 DI해준다.
-		MockUserDao mockUserDao = new MockUserDao(this.users);
-		userServiceImpl.setUserDao(mockUserDao);
-
-		// 메일 발송 여부 확인을 위해 목 오브젝트 DI
-		MockMailSender mockMailSender = new MockMailSender();
-		userServiceImpl.setMailSender(mockMailSender);
-
-		userServiceImpl.upgradeLevels();
-
-		// MockuserDao로부터 업데이트 결과를 가져온다.
-		List<User> updated = mockUserDao.getUpdated();
-		assertThat(updated.size(), is(2));
-		checkUserAndLevel(updated.get(0), "joytouch", Level.SILVER);
-		checkUserAndLevel(updated.get(1), "madnite1", Level.GOLD);
-
-		List<String> request = mockMailSender.getRequests();
-		assertThat(request.size(), is(2));
-		assertThat(request.get(0), is(users.get(1).getEmail()));
-		assertThat(request.get(1), is(users.get(3).getEmail()));
+		userService.upgradeLevels();
 	}
 
 	private void checkUserAndLevel(User updated, String expectedId,

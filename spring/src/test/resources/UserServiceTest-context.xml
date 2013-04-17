@@ -28,9 +28,6 @@
 		<property name="mailSender" ref="mailSender"/>
 	</bean>
 	
-	<bean id="testUserService" class="edu.UserServiceImpl$TestUserServiceImpl"
-		parent="userService"/>
-	
 	<bean id="jdbcContext" class="edu.dao.JdbcContext">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
@@ -58,16 +55,6 @@
 		<property name="text" value="Factory Bean"/>
 	</bean>
 	
-	<bean id="sqlService" class="edu.user.SimpleSqlService">
-		<property name="sqlMap">
-			<map>
-				<entry key="userAdd" value="INSERT INTO USERS (id,name,password,level,login,recommend,email) VALUES (?,?,?,?,?,?,?)"/>
-				<entry key="userGet" value="SELECT * from users where id = ?"/>
-				<entry key="userGetAll" value="select * from users order by id"/>
-				<entry key="userDeleteAll" value="delete from users"/>
-				<entry key="userGetCount" value="select count(*) from users"/>
-				<entry key="userUpdate" value="UPDATE users SET name=?, password=?,level=?,login=?,recommend=?,email=? WHERE id=?"/>
-			</map>
-		</property>
+	<bean id="sqlService" class="edu.user.sqlservice.XmlSqlService">
 	</bean>
 </beans>

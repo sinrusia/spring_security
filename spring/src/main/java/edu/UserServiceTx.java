@@ -60,4 +60,22 @@ public class UserServiceTx implements UserService {
 		// TODO Auto-generated method stub
 
 	}
+
+	@Override
+	public void deleteAll() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public User get(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

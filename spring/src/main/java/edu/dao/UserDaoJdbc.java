@@ -38,6 +38,23 @@ public class UserDaoJdbc implements UserDao {
 	public void setDataSource(DataSource dataSource) {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
+	
+	private RowMapper<User> userMapper = new RowMapper<User>() {
+		@Override
+		public User mapRow(ResultSet rs, int rowNum)
+				throws SQLException {
+			User user = new User();
+			user.setId(rs.getString("id"));
+			user.setName(rs.getString("name"));
+			user.setPassword(rs.getString("password"));
+			user.setLevel(Level.valueOf(rs.getInt("level")));
+			user.setLogin(rs.getInt("login"));
+			user.setRecommend(rs.getInt("recommend"));
+			user.setEmail(rs.getString("email"));
+			return user;
+		}
+	};
+
 
 	public void add(final User user) {
 		this.jdbcTemplate.update(new PreparedStatementCreator() {
@@ -76,71 +93,23 @@ public class UserDaoJdbc implements UserDao {
 			}
 		});
 	}
-
 	
 	public User get(String id){
 		return this.jdbcTemplate.queryForObject(sqlService.getSql("userGet"),
-				new Object[] {id},
-			new RowMapper<User>() {
-				@Override
-				public User mapRow(ResultSet rs, int rowNum)
-						throws SQLException {
-					User user = new User();
-					user.setId(rs.getString("id"));
-					user.setName(rs.getString("name"));
-					user.setPassword(rs.getString("password"));
-					return user;
-				}
-			});
+				new Object[] {id}, this.userMapper);
 	}
 
 	public void deleteAll() {
-		this.jdbcTemplate.update(new PreparedStatementCreator() {
-			
-			@Override
-			public PreparedStatement createPreparedStatement(Connection con)
-					throws SQLException {
-				return con.prepareStatement(sqlService.getSql("userDeleteAll"));
-			}
-		});
+		this.jdbcTemplate.update(sqlService.getSql("userDeleteAll"));
 	}
 	
 	public int getCount()  {
-		return jdbcTemplate.query(new PreparedStatementCreator() {
-			
-			@Override
-			public PreparedStatement createPreparedStatement(Connection con)
-					throws SQLException {
-				return con.prepareStatement(sqlService.getSql("userGetCount"));
-			}
-			
-		}, new ResultSetExtractor<Integer>() {
-			@Override
-			public Integer extractData(ResultSet rs) throws SQLException,
-					DataAccessException {
-				rs.next();
-				return rs.getInt(1);
-			}
-		});
+		return jdbcTemplate.queryForInt(sqlService.getSql("userGetCount"));
 	}
 	
 	public List<User> getAll(){
 		return this.jdbcTemplate.query(sqlService.getSql("userGetAll"),
-				new RowMapper<User>() {
-					@Override
-					public User mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						User user = new User();
-						user.setId(rs.getString("id"));
-						user.setName(rs.getString("name"));
-						user.setPassword(rs.getString("password"));
-						user.setLevel(Level.valueOf(rs.getInt("level")));
-						user.setLogin(rs.getInt("login"));
-						user.setRecommend(rs.getInt("recommend"));
-						user.setEmail(rs.getString("email"));
-						return user;
-					}
-				});
+				this.userMapper);
 			
 	}
 
