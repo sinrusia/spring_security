@@ -37,13 +37,13 @@ public class UserDaoHibernate implements UserDao {
 	}
 
 	@Override
-	public void upgradeLevels() {
+	public void update(User user) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void update(User user) {
+	public void upgradeLevel() {
 		// TODO Auto-generated method stub
 		
 	}

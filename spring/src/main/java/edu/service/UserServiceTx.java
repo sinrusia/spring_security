@@ -1,4 +1,4 @@
-package edu;
+package edu.service;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -32,7 +32,7 @@ public class UserServiceTx implements UserService {
 	}
 
 	@Override
-	public void upgradeLevels() {
+	public void upgradeLevels() throws Exception{
 		TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try{
 			userService.upgradeLevels();

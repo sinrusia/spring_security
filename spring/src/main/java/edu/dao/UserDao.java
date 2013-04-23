@@ -12,6 +12,6 @@ public interface UserDao {
 	int getCount();
 	void deleteAll();
 	
-	void upgradeLevels();
+	void upgradeLevel();
 	void update(User user);
 }

@@ -1,25 +1,33 @@
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import edu.TestUserService;
-import edu.UserService;
-import edu.UserServiceImpl;
-import edu.UserServiceTx;
 import edu.dao.UserDao;
 import edu.domain.Level;
 import edu.mail.MailSender;
 import edu.mail.MockMailSender;
+import edu.service.UserService;
+import edu.service.UserServiceImpl;
+import edu.service.UserServiceTx;
 import edu.vo.User;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -27,8 +35,11 @@ import edu.vo.User;
 public class UserServiceTest {
 
 	@Autowired
-	UserDao userDao;
+	UserDao dao;
 
+	@Autowired
+	private DataSource dataSource;	
+	
 	@Autowired
 	PlatformTransactionManager transactionManager;
 
@@ -36,38 +47,91 @@ public class UserServiceTest {
 	MailSender mailSender;
 
 	@Autowired
-	UserService userServiceImpl;
+	UserService userService;
 
 	private List<User> users;
 
+	@Test
+	public void addAndGet() throws SQLException {
+		
+		dao.deleteAll();
+		
+		User user = new User();
+		user.setId("user01");
+		user.setName("°íÀçÇÐ");
+		user.setPassword("user01");
+		user.setLevel(Level.BASIC);
+		dao.add(user);
+		
+		User user2 = dao.get(user.getId());
+		
+		assertThat(user.getId(), is(user2.getId()));
+		
+		assertThat(dao.getCount(), is(1));
+	}
+	
+	@Test(expected=DataAccessException.class)
+	public void duplicateKey(){
+		dao.deleteAll();
+		
+		User user = new User();
+		user.setId("user02");
+		user.setName("È«±æ");
+		user.setLevel(Level.BASIC);
+		user.setPassword("user02");
+		dao.add(user);
+		
+		dao.add(user);
+	}
+	
+	@Test
+	public void sqlExceptionTranslate(){
+		dao.deleteAll();
+		
+		User user = new User();
+		user.setId("user02");
+		user.setName("È«±æ");
+		user.setPassword("user02");
+		
+		try {
+			dao.add(user);
+			dao.add(user);
+		} catch (DuplicateKeyException e) {
+			SQLException sqlEx = (SQLException)e.getRootCause();
+			SQLExceptionTranslator set = 
+					new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			assertThat(set.translate(null, null, sqlEx), is(DuplicateKeyException.class));
+		}
+	}
+	
 	@Before
 	public void setUp() {
 		users = new ArrayList<User>();
-		users.add(new User("id01", "È«±æµ¿", "pwd01", 49, 1, Level.valueOf(1),
+		users.add(new User("bumjin", "È«±æµ¿", "pwd01", 49, 1, Level.valueOf(1),
 				"abcd1@wemb.co.kr"));
-		users.add(new User("id02", "Àå¹ßÀå", "pwd02", 51, 1, Level.valueOf(1),
+		users.add(new User("joytouch", "Àå¹ßÀå", "pwd02", 51, 1, Level.valueOf(1),
 				"abcd2@wemb.co.kr"));
-		users.add(new User("id03", "ÃáÇâÀÌ", "pwd03", 3, 1, Level.valueOf(1),
+		users.add(new User("erwins", "ÃáÇâÀÌ", "pwd03", 3, 1, Level.valueOf(1),
 				"abcd3@wemb.co.kr"));
-		users.add(new User("id04", "±è»ñ°«", "pwd04", 101, 2, Level.valueOf(2),
+		users.add(new User("madnite1", "ÀÌ»óÈ£", "pwd04", 101, 2, Level.valueOf(2),
 				"abcd4@wemb.co.kr"));
-		users.add(new User("id05", "±è»ñ°«", "pwd05", 4, 1, Level.valueOf(1),
+		users.add(new User("green", "¿À¹Î±Ô", "pwd05", 4, 1, Level.valueOf(1),
 				"abcd4@wemb.co.kr"));
 	}
 
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
 		TestUserService testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setUserDao(userDao);
+		testUserService.setUserDao(dao);
 		testUserService.setMailSender(mailSender);
 		
 		UserServiceTx txUserService = new UserServiceTx();
 		txUserService.setTransactionManager(transactionManager);
 		txUserService.setUserService(testUserService);
 		
-		userDao.deleteAll();
+		dao.deleteAll();
 		
-		for(User user : users) userDao.add(user);
+		for(User user : users) dao.add(user);
 		
 		try{
 			txUserService.upgradeLevels();
@@ -80,14 +144,15 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext
 	public void upgradeLevels() throws Exception {
-		userDao.deleteAll();
+		dao.deleteAll();
+		
 		for (User user : users)
-			userDao.add(user);
+			userService.add(user);
 
 		MockMailSender mockMailSender = new MockMailSender();
-		userServiceImpl.setMailSender(mockMailSender);
+		userService.setMailSender(mockMailSender);
 		
-		userServiceImpl.upgradeLevels();
+		userService.upgradeLevels();
 		
 		checkLevelUpgraded(users.get(0), false);
 		checkLevelUpgraded(users.get(1), true);

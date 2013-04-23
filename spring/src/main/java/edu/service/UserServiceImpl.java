@@ -1,4 +1,4 @@
-package edu;
+package edu.service;
 
 import java.util.List;
 import java.util.Properties;
@@ -18,10 +18,15 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import edu.dao.UserDao;
+import edu.domain.Level;
 import edu.mail.MailSender;
 import edu.vo.User;
 
 public class UserServiceImpl implements UserService {
+	
+	public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
+	
+	public static final int MIN_RECCOMEND_FOR_GOLD = 30;
 
 	private DataSource dataSource;
 
@@ -44,12 +49,18 @@ public class UserServiceImpl implements UserService {
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
 	}
+	
+	/**
+	 * 
+	 */
+	private PlatformTransactionManager transactionManager;
 
-	public void upgradeLevels() {
-		upgradeLevelsInternal();
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
 	}
 
-	private void upgradeLevelsInternal() {
+	public void upgradeLevels() throws Exception{
 		List<User> users = userDao.getAll();
 		for (User user : users) {
 			if (canUpgradeLevel(user)) {
@@ -75,7 +86,17 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private boolean canUpgradeLevel(User user) {
-		return user.canUpgradeLevel();
+		Level currentLevel = user.getLevel();
+		
+		switch (currentLevel) {
+		case BASIC:
+			return (user.getLogin() >= MIN_LOGCOUNT_FOR_SILVER);
+		case SILVER:
+			return (user.getRecommend() >= MIN_LOGCOUNT_FOR_SILVER);
+		case GOLD: return false;
+		default:
+			throw new IllegalArgumentException("Unknown Level");
+		}
 	}
 
 	@Override
