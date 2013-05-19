@@ -4,6 +4,9 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 	
-	
+	<bean id="hello" class="edu.ioc.bean.Hello">
+		<property name="name" value="Child"/>
+		<property name="printer" ref="printer"/>
+	</bean>
 	
 </beans>
