@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<project default="compile" basedir="../">
+
+	<taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask" classpath="./lib/compiler.jar" />
+
+	<target name="compile">
+		<jscomp compilationLevel="simple" warning="verbose" debug="false" 
+			output="${basedir}/dist/file.js">
+			<sources dir="${basedir}/src">
+				<file name="Universe.js"/>
+				<file name="CarMaker.js"/>
+				<file name="Sale.js"/>
+			</sources>
+		</jscomp>
+	</target>
+
+
+</project>

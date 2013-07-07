@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+
+<script type="text/javascript">
+var agg = (function () {
+	var index = 0;
+	    data = [1, 2, 3, 4, 5],
+	    length = data.length;
+	return {
+		next: function () {
+			var element;
+			if (!this.hasNext()) {
+				return null;
+			}
+			element = data[index];
+			index = index + 2;
+			return element;
+		},
+		
+		// 
+		hasNext: function () {
+			return index < length;
+		},
+		
+		// 포인터를 다시 처음으로 이동한다.
+		rewind: function () {
+			index = 0;
+		},
+		
+		 // 현재의 요소를 반환한다.
+		current: function () {
+			return data[index];
+		}
+	};
+	  
+}());
+
+var element;
+while (agg.hasNext()) {
+	console.log(agg.next());
+}
+
+agg.rewind();
+
+console.log(agg.current());
+</script>
+</body>
+</html>

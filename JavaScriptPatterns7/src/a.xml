@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<project basedir="." default="compile">
+
+  <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
+           classpath="../build/compiler.jar"/>
+
+  <target name="compile">
+    
+    <jscomp compilationLevel="simple" warning="verbose" 
+            debug="false" output="output/file.js">
+
+      <externs dir="${basedir}/src">
+        <file name="extern.js"/>
+      </externs>
+
+      <sources dir="${basedir}/src">
+        <file name="simple1.js"/>
+        <file name="simple2.js"/>
+      </sources>
+
+      <sources dir="${basedir}/other">
+        <file name="simple3.js"/>
+      </sources>
+
+    </jscomp>
+    
+  </target>
+
+</project>
+
+
+
+<?xml version="1.0"?>
+<project basedir="." default="run">
+ 
+    <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask" classpath="build-lib/compiler.jar"/>
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${basedir}/build-lib//ant-contrib/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+ 
+    <target name="run">
+        <foreach target="compile" param="foreach.file">
+            <path>
+                <fileset dir="${basedir}" casesensitive="yes">
+                    <include name="**/*.js"/>
+                </fileset>
+            </path>
+        </foreach>
+    </target>
+ 
+    <target name="compile">
+        <!-- This gets the filename without the directory path. -->
+        <basename property="file.js" file="${foreach.file}"/>
+ 
+        <!-- Using Javascript functions to work out the paths -->
+        <script language="javascript"> <![CDATA[
+ 
+            // get values
+            fullPath = project.getProperty("foreach.file");
+            fileOnly = project.getProperty("file.js");
+ 
+            pathOnly = fullPath.substring(0, fullPath.indexOf(fileOnly));
+ 
+            // store the result in a new property
+            project.setProperty("directory",pathOnly);
+ 
+        ]]> </script>
+ 
+        <echo message="Compressing file ${file.js} in ${directory}" />
+     
+        <jscomp compilationLevel="simple" warning="verbose" debug="false" output="${foreach.file}">
+ 
+            <sources dir="${directory}">
+                <file name="${file.js}"/>
+            </sources>
+ 
+        </jscomp>
+     
+    </target>
+ 
+</project>
+
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<project name="Google Closure Ant Test" basedir="." default="release">
+ 
+ <!-- Compilation level -->
+ <property name="compilation" value="SIMPLE_OPTIMIZATIONS" />
+
+ <!-- Full path of the current project  -->
+ <property name="projectPath" value="D:/workspace/we/umm" />
+ <property name="src" value="${projectPath}/src" />
+
+
+ <!-- List of javascript files to compile -->
+ <property name="filesToCompile" value="${src}/main.js" />
+  <property name="outputName" value="main" />
+
+
+
+  <!-- expect to find the following directories under this root 
+    closure-compiler
+      -> compiler.jar
+    closure-library
+      -> closure/**
+    closure-linter
+      -> closure_linter/**
+  -->
+  <property name="closureToolsRoot" value="D:/Archive/Programming/WebProjects/TOOLS" />
+ 
+ 
+ <!-- Full path to the compiled file (created if not defined) -->
+ <property name="outputBin" value="${projectPath}/bin" />
+
+ <!-- Full path to the file which will contains debug output and errors -->
+ <property name="outputBuild" value="${projectPath}/build" />
+
+
+ <target name="clean">
+  <delete dir="${outputBin}" />
+  <delete dir="${outputBuild}" />
+ </target>
+
+ <!-- copies libraries into the project -->
+ <target name="get-libs">
+  <copy todir="${projectPath}/lib/closure"><fileset dir="${closureToolsRoot}/closure-library/closure" /></copy>
+ </target>
+ 
+ 
+ <target name="init" depends="clean">
+  <mkdir dir="${outputBin}" />
+  <mkdir dir="${outputBuild}" />
+    <mkdir dir="${outputBuild}/bin" />
+ </target>
+
+ <!-- lint not yet working -->
+ <target name="js-lint" depends="js-build">
+  <exec executable="python" >
+   <arg line="${closureToolsRoot}/closure-linter/closure_linter/gjslint.py '${outputBuild}/bin/${outputName}.debug.js'" />
+  </exec>
+ </target>
+
+ <target name="js-build" depends="init">
+  <!-- error="${outputBuild}/build-calcdeps.log" -->
+  <exec failonerror="true" errorproperty="build-msgs" output="${outputBuild}/bin/${outputName}.debug.js" executable="python">
+   <arg line="${closureToolsRoot}/closure-library/closure/bin/calcdeps.py -i ${filesToCompile} -p '${src}' -p '${closureToolsRoot}/closure-library/closure' -o script" />
+  </exec>
+  <echo message="${build-msgs}" />
+ </target>
+
+ <target name="js-minify" depends="js-build">
+  <exec failonerror="true"  executable="java">
+      <arg line="-jar ${closureToolsRoot}/closure-compiler/compiler.jar" />
+   <arg line="--compilation_level=${compilation}" />
+      <arg line="--jscomp_warning=checkTypes" />
+   <arg line="--summary_detail_level=3" />
+      <arg line="--js=${outputBuild}/bin/${outputName}.debug.js" />
+      <arg line="--js_output_file=${outputBuild}/bin/${outputName}.min.js" />
+  </exec>
+ </target>
+ 
+ <target name="release" depends="js-minify">
+    <copy todir="${outputBin}">
+      <fileset dir="${outputBuild}/bin" />
+    </copy>
+ </target>
+
+</project>

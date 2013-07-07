@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+<div id="results"></div>
+<script type="text/javascript">
+
+function Player(name) {
+	this.points = 0;
+	this.name = name;
+}
+
+Player.prototype.play = function () {
+	this.points += 1;
+	mediator.played();
+}
+
+var scoreboard = {
+	// 점수를 표시할 HTML 엘리먼트
+	element: document.getElementById('results'),
+	// 점수 표시를 갱신한다.
+	update: function (score) {
+		var i, msg = '';
+		for (i in score) {
+			if (score.hasOwnProperty(i)) {
+				msg += '<p><strong>' + i + '<\/strong>: ';
+				msg += score[i];
+				msg += '<\/p>';
+			}
+		}
+		this.element.innerHTML = msg;
+	}
+};
+
+var mediator = {
+	// 모든 player 객체들
+	players: {},
+	
+	// 초기화
+	setup: function () {
+		var players = this.players;
+		players.home = new Player('Home');
+		players.guest = new Player('Guest');
+	},
+	
+	// 누군가 play하고 점수를 업데이트한다.
+	played: function () {
+		var players = this.players,
+			score = {
+				Home: players.home.points,
+				Guest: players.guest.points
+			};
+		
+		scoreboard.update(score);
+	},
+	
+	keypress: function (e) {
+		e = e || window.event;
+		if (e.which === 49) {
+			mediator.players.home.play();
+			return;
+		}
+		
+		if(e.which === 48) {
+			mediator.players.guest.play();
+			return;
+		}
+	}
+};
+
+mediator.setup();
+
+window.onkeypress = mediator.keypress;
+
+setTimeout(function () {
+	window.onkeypress = null;
+	alert('Game over!');
+}, 30000);
+</script>
+</body>
+</html>

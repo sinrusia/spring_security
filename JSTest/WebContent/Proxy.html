@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+
+<p><span id="toggle-all">Toggle Checked</span></p>
+<ol id="vids">
+	<li><input type="checkbox" checked>
+		<a href="http://new.music.yahoo.com/videos/---2158073">Gravedigger</a>
+	</li>
+	<li><input type="checkbox" checked>
+		<a href="http://new.music.yahoo.com/videos/---4472739">Save Me</a>
+	</li>
+	<li><input type="checkbox" checked>
+		<a href="http://new.music.yahoo.com/videos/---45286339">Crush</a>
+	</li>
+</ol>
+<script type="text/javascript">
+var $ = function (id) {
+	return document.getElementById(id);
+}
+
+$('vids').onclick = function (e) {
+	var src, id;
+	
+	e = e || window.event;
+	src = e.target || e.srcElement;
+	
+	if (src.nodeName !== "A") {
+		return;
+	}
+	
+	if (typeof e.preventDefault === "function") {
+		e.preventDefault();
+	}
+	
+	e.returnValue = false;
+	
+	id = src.href.split('---')[1];
+	
+	if (src.className === "play") {
+		src.parentNode.innerHTML = videos.getPlayer(id);
+		return;
+	}
+	
+	src.parentNode.id = "v" + id;
+	videos.getInfo(id);
+	
+}
+
+var videos = {
+	getPlayer: function (id) {...},
+	updateList: function (date) {...},
+	getInfo: function (id) {
+		var info = $('info' + id);
+		if (!info) {
+			http.makeRequest([id], "videos.updateList");
+			return;
+		}
+		
+		if (info.style.display === "none") {
+			info.style.display = '';
+		} else {
+			info.style.display = 'none';
+		}
+	}
+};
+
+var http = {
+	makeRequest: function (ids, callback) {
+		var url = 'http://query.yahooapis.com/v1/public/yql?q=',
+			sql = 'select * from music.video.id where ids in ("%ID%")',
+			format = "format=json",
+			handler = "callback=" + callback,
+			script = document.createElement('script');
+		
+		sql = sql.replace('%ID%', ids.join('","'));
+		sql = encodeURIComponent(sql);
+		
+		url += sql + '&' + format + '&' + handler;
+		script.src = url;
+		
+		document.body.appendChild(script);
+	}
+};
+</script>
+</body>
+</html>
