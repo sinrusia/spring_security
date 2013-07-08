@@ -5,6 +5,50 @@
 <title>Insert title here</title>
 </head>
 <body>
+<script src="file.js"></script>
+<script type="text/javascript">
+var paper = {
+		daily: function() {
+			this.publish("big news today");
+		},
+		monthly: function() {
+			this.publish("interesting analysis", "monthly");
+		}
+};
 
+makePublisher(paper);
+
+var joe = {
+		drinkCoffee: function (paper) {
+			console.log(paper + ' 를 읽었습니다.');
+		},
+		sundayPreNap: function (monthly) {
+			console.log('잠들기 전에' + monthly + '를 읽고 있습니다.');
+		}
+}
+
+paper.subscribe(joe.drinkCoffee);
+paper.subscribe(joe.sundayPreNap, 'monthly');
+
+paper.daily();
+paper.daily();
+paper.daily();
+paper.monthly();
+
+makePublisher(joe);
+
+joe.tweet = function (msg) {
+	this.publish(msg);
+};
+
+paper.readTweets = function (tweet) {
+	console.log('Call big meeting! Someone ' + tweet);
+}
+
+joe.subscribe(paper.readTweets);
+
+joe.tweet("hated the paper today");
+
+</script>
 </body>
 </html>

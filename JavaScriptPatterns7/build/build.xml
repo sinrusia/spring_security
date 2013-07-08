@@ -10,6 +10,7 @@
 				<file name="Universe.js"/>
 				<file name="CarMaker.js"/>
 				<file name="Sale.js"/>
+				<file name="publicher.js"/>
 			</sources>
 		</jscomp>
 	</target>
