@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+
+<div style="position:basolute; top: 50px; left: 50px;">
+
+<canvas id="canvas" width="500" height="500">
+
+</canvas>
+</div>
+
+<script src="modernizr.js"></script>
+<script type="text/javascript">
+window.addEventListener('load', eventWindowLoaded, false);
+
+function eventWindowLoaded() {
+	canvasApp();
+}
+
+function canvasSupport () {
+	return Modernizr.canvas;
+}
+
+function canvasApp() {
+	
+	var temp = 90;
+	
+	if (!canvasSupport()) {
+		return;
+	} else {
+		var theCanvas = document.getElementById("canvas");
+		var context = theCanvas.getContext("2d");
+	}
+	
+	drawScreen();
+	
+	function drawScreen() {
+		var x = 50;
+		var y = 100;
+		var width = 100;
+		var height = 100;
+		
+		//var gr = context.createLinearGradient(50, 50, 25, 50, 50, 100);
+		var gr = context.createRadialGradient(50, 50, 25, 100, 100+, 100);
+		
+		gr.addColorStop(0, 'rgb(255, 0, 0)');
+		gr.addColorStop(.5, 'rgb(0, 255, 0)');
+		gr.addColorStop(1, 'rgb(255, 0, 0)');
+		
+		
+		context.fillStyle = gr;
+		context.beginPath();
+		context.moveTo(0, 0);
+		context.lineTo(50, 0);
+		context.lineTo(100, 50);
+		context.lineTo(50, 100);
+		context.lineTo(0, 100);
+		context.lineTo(0, 0);
+		
+		context.stroke();
+		context.fill();
+		context.closePath();
+		//setTimeout(drawScreen, 1)
+		
+		
+	}
+}
+
+</script>
+</body>
+</html>

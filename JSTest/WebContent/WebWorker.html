@@ -12,6 +12,67 @@ ww.onmessage = function (event) {
      document.body.innerHTML += "<p>" + '백그라운드 스레드 메시지: ' + event.data + "</p>";
 }
 
+
+
+var b = document.getElementById('clickme');
+if (document.addEventListener) {	// W3C
+	b.addEventListener('click', myHandler, false);
+} else if (document.attachEvent) { // IE
+	b.attachEvent('onClick', myHandler);
+} else {
+	b.onClick = myHandler;
+}
+
+function myHandler (e) {
+	var src, parts;
+	
+	// get event object and source element
+	e = e || window.event;
+	src = e.target || e.srcElement;
+	
+	// change button label
+	parts = src.innerHTML.split(": ");
+	parts[1] = parseInt(parts[1], 10) + 1;
+	src.innerHTML = parts[0] + ": " + parts[1];
+	
+	// 이벤트가 상위 노드로 전달되지 않게 한다.
+	if (typeof e.stopPropagation === "function") {
+		e.stopPropagation();
+	}
+	// IE
+	if (typeof e.cancelBubble !== "undefined") {
+		e.cancelBubble = true;
+	}
+	
+	// 기본 동작이 수행되지 않게 한다.
+	if (typeof e.preventDefault === "function") {
+		e.preventDefault();
+	}
+	// IE
+	if (typeof e.returnValue !== "undefined") {
+		e.returnValue = false;
+	}
+}
+
+
+// 지역변수를 사용, 루프내에서 DOM 접근을 피함
+var i, content = "";
+for (i = 0; i < 100; i += 1) {
+	content += 1 + ",";
+}
+document.getElementById("result").innerHTML += content;
+
+// 지역변수 활용
+var style = document.getElementById("result").style,
+	padding = style.padding,
+	margin = style.margin;
+	
+// 셀렉터 사용
+document.querySelector("ul .selected");
+document.querySelectorAll("#widget .class");
+
+
+
 </script>
 </body>
 </html>

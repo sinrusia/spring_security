@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html lang="ko">
+<head>
+	<script type="text/javascript">
+		window.addEventListener("load", eventWindowLoaded, false);
+		
+		function eventWindowLoaded () {
+			canvasApp();
+		}
+		
+		function canvasApp() {
+			drawScreen();
+		}
+		
+		function drawScreen() {
+			console.log("draw start");
+			var theCanvas = document.getElementById("canvasOne");
+			
+			if (!theCanvas || !theCanvas.getContext) {
+				return;
+			}
+			
+			var context = theCanvas.getContext("2d");
+			
+			context.fillStyle = "#FFFFAA";
+			context.fillRect(0, 0, 500, 300);
+			
+			context.fillStyle = "#000000";
+			context.font = "20px _sans";
+			context.textBaseline = "top";
+			context.fillText ("Hello World!", 195, 80);
+			
+			
+			console.log("draw end");
+			
+		}
+	</script>
+</head>
+
+<body>
+	<canvas id="canvasOne" width="500" height="300">
+		Your browser does not support HTML5 Canvas
+	</canvas>
+	
+
+</body>
+</html>

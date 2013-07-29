@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<script>
+(function() {
+	var root = this;
+	var underscore = root._;
+	console.log(underscore);
+	
+	
+	var _ = function(obj) {
+		return obj;
+	}
+	
+	
+	root._ = _;
+	
+	
+	console.log(root._);
+	
+}());
+
+</script>
+
+</body>
+</html>
