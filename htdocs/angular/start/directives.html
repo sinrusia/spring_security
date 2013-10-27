@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html ng-app="directive">
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+<link rel="stylesheet" src="directives.css">
+</head>
+<body>
+	<div contentEditable="true" ng-model="content">Edit Me</div>
+	<pre>model = {{content}}</pre>
+	
+	<div ng-init="list = ['Chrome', 'Safari', 'Firefox', 'IE']">
+	Number formatting: {{1234567890 | number}} <br>
+	array filtering <input ng-model="predicate">
+	{{ list | filter:predicate | json}}
+	{{ list | json}}
+	</div>
+<script src="./js/lib/angular.js"></script>
+<script src="directives.js"></script>
+</body>
+</html>

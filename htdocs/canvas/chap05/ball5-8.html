@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+<script src="../js/lib/modernizr.js"></script>
+<script type="text/javascript">
+window.addEventListener('load', eventWindowLoaded, false);
+
+function eventWindowLoaded() {
+	canvasApp();
+}
+
+function canvasSupport () {
+	return Modernizr.canvas;
+}
+
+function canvasApp() {
+	
+	if (!canvasSupport()) {
+		alert("not");
+		return;
+	}
+	
+	function drawScreen() {
+		context.fillStyle = '#EEEEEE';
+		context.fillRect(0, 0, theCanvas.width - 2, theCanvas.height - 2);
+		
+		context.strokeStyle = '#000000';
+		context.strokeRect(1, 1, theCanvas.width - 2, theCanvas.height - 2);
+		
+		update();
+		testWalls();
+		collide();
+		render();
+	}
+	
+	function update() {
+		for (var i = 0; i < balls.length; i++) {
+			ball = balls[i];
+			// 중력이 적용되는 부분 
+			// 가속의 0.01%만큼의 가속을 빼고 있다.
+			// 일정한 속도로 줄어드는건 아니고 일정한 비율만큼 감속하게 된다.
+			ball.velocityx = ball.velocityx - (ball.velocityx * friction);
+			ball.velocityy = ball.velocityy - (ball.velocityy * friction);
+			
+			// 다음위치 계산
+			ball.nextx = (ball.x += ball.velocityx);
+			ball.nexty = (ball.y += ball.velocityy);
+			
+			console.log(ball.nextx + " "+ ball.nexty);
+
+		}
+	}
+	
+	function testWalls() {
+		var ball;
+		var testBall;
+		
+		for(var i = 0; i < balls.length; i++){
+			ball = balls[i];
+			
+			if (ball.nextx + ball.radius > theCanvas.width) {
+				// 오른쪽 벽에 부딪혔을때.
+				// x 가속이 반대가 된다.
+				ball.velocityx = ball.velocityx * -1;
+				// 공의 다음 x 위치는 오른쪽 변면에 붙어 있는 지점이 된다.
+				ball.nextx = theCanvas.width - ball.radius;
+			} else if (ball.nextx - ball.radius < 0) {
+				// 왼쪽 벽에 부딪혔을때.
+				ball.velocityx = ball.velocityx * -1;
+				// 공의 다음 x 위치는 왼쪽 변명에 붙어 있는 지점이 된다.
+				ball.nextx = ball.radius;
+			} else if (ball.nexty + ball.radius > theCanvas.height) {
+				// 아래 벽에 부딪혔을때.
+				// y측 가속이 반대가 된다.
+				ball.velocityy = ball.velocityy * -1;
+				// 공의 다음 위치는 아랫면에 붙도록 한다.
+				ball.nexty = theCanvas.height - ball.radius;
+			} else if (ball.nexty - ball.radius < 0) {
+				// 윗 벽에 부딪혔을때.
+				// y측 가속이 반대가 된다.
+				ball.velocityy = ball.velocityy * -1;
+				// 공의 다음 y위치는 위쪽면에 붙도록 한다.
+				ball.nexty = ball.radius;
+			}
+		}
+	}
+	
+	function collide() {
+		var ball;
+		var testBall;
+		
+		for (var i = 0; i < balls.length; i++) {
+			ball = balls[i];
+			for (var j = i + 1; j < balls.length; j++){
+				testBall = balls[j];
+				//공끼리 부딪히는지 확인한다.
+				if(hitTestCircle(ball, testBall)){
+					// 충돌된 공 처리.
+					collideBalls(ball, testBall);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 공을 그리는 역할을 수행한다.
+	 */
+	function render() {
+		var ball;
+		
+		context.fillStyle = '#000000';
+		
+		for (var i = 0; i < balls.length; i++) {
+			ball = balls[i]
+			ball.x = ball.nextx;
+			ball.y = ball.nexty;
+			context.beginPath();
+			context.arc(ball.x, ball.y, ball.radius, 0, Math.PI *2, true);
+			context.closePath();
+			context.fill();
+		}
+	}
+	
+	
+	function hitTestCircle(ball1, ball2) {
+		var retval = false;
+		
+		var dx = ball1.nextx - ball2.nextx;
+		var dy = ball1.nexty - ball2.nexty;
+		
+		var distance = (dx * dx + dy * dy);
+		
+		if (distance <= (ball1.radius + ball2.radius) * (ball1.radius + ball2.radius)) {
+			return true;
+		}
+		
+		return retval;
+	}
+	
+	function collideBalls(ball1, ball2) {
+		// 
+		var dx = ball1.nextx - ball2.nextx;
+		var dy = ball1.nexty - ball2.nexty;
+		
+		// 충돌한 각도를구한다.
+		// 두 원의 중심각끼리의 각도 구하기 sin, cos
+		var collisionAngle = Math.atan2(dy, dx);
+		
+		// 공들의 속도 벡터를 계산.
+		// 속도는 중력의 법칙에 의해 계속 줄고 공마다 다르기 때문에 구해야 한다.
+		//C² = A² + B²
+		// 첫번째 원의 속도 계산
+		var speed1 = Math.sqrt(ball1.velocityx * ball1.velocityx + ball1.velocityy * bell1.velocityy);
+		// 두번째 원의 속대 계산
+		var speed2 = Math.sqrt(ball2.velocityx * ball2.velocityx + ball2.velocityy * ball2.velocityy);
+		
+		// 공들의 라디안 각도 계산, 벡터의 방향 계산.
+		// 이동방향의 각 계산
+		// 첫번째 원의 이동방향
+		var direction1 = Math.atan2(ball1.velocityy, ball1.velocityx);
+		// 두번째 원의 이동방향
+		var direction2 = Math.atan2(ball2.velocityy, ball2.velocityx);
+		
+		var velocityx_1 = speed1 * Math.cos(direction1 - collisionAngle);
+		var velocityy_1 = speed1 * Math.sin(direction1 - collisionAngle);
+		
+		var velocityx_2 = speed2 * Math.cos(direction1 - collisionAngle);
+		var velocityy_2 = speed2 * Math.sin(direction1 - collisionAngle);
+		
+		
+		var final_velocityx_1 = (ball1.mass - ball2.mass) * velocityx_1 + (ball2.mass + ball2.mass) * velocityx_2) / (ball1.mass + ball2.mass);
+		
+		var final_velocityy_2 = (ball1.mass + ball1.mass) * velocityx_1 + (ball2.mass - ball1.mass) * velocityx_2) / (ball1.mass + ball2.mass);
+		
+		var final_velocityy_1 = velocityy_1;
+		var final_velocityy_2 = velocityy_2;
+		
+		ball1.velocityx = Math.cos(collisionAngle) * final_velocityx_1 + Math.cos(collisionAngle + Math.PI / 2) * final_velocityy_1;
+		
+		ball1.velocityy = Math.sin(collisionAngle) * final_velocityx_1 + Math.sin(collisionAngle + Math.PI / 2) * final_velocityy_1;
+		
+		ball2.velocityx = Math.cos(collisionAngle) * final_velocityx_2 + Math.cos(collisionAngle + Math.PI / 2) * final_velocityy_2;
+		
+		ball2.velocityy = Math.sin(collisionAngle) * final_velocityx_2 + Math.sin(collisionAngle + Math.PI / 2) * final_velocityy_2;
+		
+		ball1.nextx = (ball1.nextx += ball1.velocityx);
+		ball1.nexty = (ball1.nexty += ball1.velocityy);
+		ball2.nextx = (ball2.nextx += ball2.velocityx);
+		ball2.nexty = (ball2.nexty += ball2.velocityy);
+	}
+	
+	// initial members
+	
+	var numBalls = 50; // 공의 개수는 50개
+	var maxSize = 12;
+	var minSize = 3;
+	var maxSpeed = maxSize + 5;
+	var balls = new Array();
+	var tempBall;
+	var tempX;
+	var tempY;
+	var tempSpeed;
+	var tempAngle;
+	var tempRadius;
+	var tempRadians;
+	var tempvelocityx;
+	var tempvelocityy;
+	var friction = .01;
+	
+	//
+	theCanvas = document.getElementById("canvasOne");
+	// 
+	context = theCanvas.getContext("2d");
+	
+	for (var i = 0; i < numBalls; i++) {
+		// 생성할 원 반지름
+		tempRadius = Math.floor(Math.random() * maxSize) + minSize;
+		var placeOK = false;
+		
+		while (!placeOK) {
+			// 생성될 위치 지정
+			tempX = tempRadius * 3 + (Math.floor(Math.random() * theCanvas.width) - tempRadius * 3);
+			tempY = tempRadius * 3 + (Math.floor(Math.random() * theCanvas.height) - tempRadius * 3);
+			
+			// 원이 클스록 속도가 느리다.
+			tempSpeed = maxSpeed - tempRadius;
+			// 처음 진행할 방향 각도
+			tempAngle = Math.floor(Math.random() * 360);
+			// 처음 진행할 방향 라디안
+			tempRadians = tempAngle * Math.PI / 180;
+			// 진행방향으로 속도 x
+			tempvelocityx = Math.cos(tempRadians) * tempSpeed;
+			tempvelocityy = Math.sin(tempRadians) * tempSpeed;
+			
+			tempBall = {
+					x : tempX,
+					y : tempY,
+					radius : tempRadius,
+					speed : tempSpeed,
+					angle : tempAngle,
+					velocityx : tempvelocityx,
+					velocityy : tempvelocityy,
+					mass : tempRadius * 8,
+					nextx: tempX,
+					nexty: tempY
+					}
+			
+			placeOK = canStartHere(tempBall);
+		}
+		balls.push(tempBall);
+	}
+	
+	
+	function canStartHere(ball) {
+		var retval = true;
+		
+		for (var i = 0; i < balls.length; i++) {
+			if (hitTestCircle(ball, balls[i])) {
+				retval = false;
+			}
+		}
+		return retval;
+	}
+	
+	setInterval(drawScreen, 33);
+}
+
+</script>
+</head>
+<body>
+<div style="position: absolute; top: 50px; left: 50px;">
+	<canvas id="canvasOne" width="500" height="500">
+		Your browser does not support HTML5 Canvas.
+	</canvas>
+</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+<div ng-init="list = ['Chrome', 'Safari', 'Firefox', 'IE']">
+	<input ng-model="list" ng-list> <br>
+	<input ng-model="list" ng-list> <br>
+	<pre>list={{list}}</pre><br>
+	<ol>
+		<li ng-repeat="item in list">
+		{{item}}
+		</li>
+	</ol>
+</div>
+
+<script src="./js/lib/angular.js"></script>
+
+</body>
+</html>
